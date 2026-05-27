@@ -1,15 +1,8 @@
-import { useEffect, useState } from "react";
 import LeadPortal from "./LeadPortal";
 
 function App() {
-  const [token, setToken] = useState<string | null>(null);
-
-  useEffect(() => {
-    const path = window.location.pathname;
-    const parts = path.split("/").filter(Boolean);
-    const t = parts[0] ?? null;
-    setToken(t);
-  }, []);
+  const path = window.location.pathname;
+  const token = path.split("/").filter(Boolean)[0] ?? null;
 
   if (!token) {
     return (

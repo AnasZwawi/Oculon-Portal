@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react";
 import "./portal.css";
 
-const API_BASE =
-  import.meta.env.VITE_API_URL ?? "https://api.oculonsystems.com";
+const API_BASE = import.meta.env.VITE_API_URL ?? "https://lex-chat-406813053868.us-central1.run.app";
 
 type Message = {
   role: "user" | "assistant";
@@ -23,24 +22,9 @@ type LeadData = {
 };
 
 const SCORE_CONFIG = {
-  hot: {
-    label: "Hot",
-    color: "#ef4444",
-    bg: "rgba(239,68,68,0.1)",
-    border: "rgba(239,68,68,0.25)",
-  },
-  warm: {
-    label: "Warm",
-    color: "#f59e0b",
-    bg: "rgba(245,158,11,0.1)",
-    border: "rgba(245,158,11,0.25)",
-  },
-  cold: {
-    label: "Cold",
-    color: "#6b9fd4",
-    bg: "rgba(107,159,212,0.1)",
-    border: "rgba(107,159,212,0.25)",
-  },
+  hot: { label: "Hot", color: "#ef4444", bg: "rgba(239,68,68,0.1)", border: "rgba(239,68,68,0.25)" },
+  warm: { label: "Warm", color: "#f59e0b", bg: "rgba(245,158,11,0.1)", border: "rgba(245,158,11,0.25)" },
+  cold: { label: "Cold", color: "#6b9fd4", bg: "rgba(107,159,212,0.1)", border: "rgba(107,159,212,0.25)" },
 };
 
 function exportToCSV(data: LeadData) {
@@ -61,7 +45,9 @@ function exportToCSV(data: LeadData) {
     ["Session ID", data.sessionId],
   ];
 
-  const csv = rows.map((r) => r.map((v) => `"${v}"`).join(",")).join("\n");
+  const csv = rows
+    .map((r) => r.map((v) => `"${v}"`).join(","))
+    .join("\n");
 
   const blob = new Blob([csv], { type: "text/csv" });
   const url = URL.createObjectURL(blob);
@@ -78,39 +64,46 @@ export default function LeadPortal({ token }: { token: string }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // TODO: remove mock
-    setData({
-      sessionId: "abc123-def456",
-      leadScore: "hot",
-      practiceAreas: ["Personal Injury"],
-      contactName: "Maria Santos",
-      contactEmail: "maria@example.com",
-      contactPhone: "(305) 555-0192",
-      caseType: "Personal Injury",
-      summary:
-        "Maria was rear-ended on I-95 on May 20th. She sustained neck and back injuries and was taken to Jackson Memorial. The other driver's insurance has made contact but she hasn't signed anything.",
-      messages: [
-        {
-          role: "assistant",
-          content: "Hi, I'm Iris. What brings you here today?",
-        },
-        {
-          role: "user",
-          content: "I was in a car accident last week and I need a lawyer",
-        },
-        {
-          role: "assistant",
-          content: "I'm sorry to hear that. Can you tell me what happened?",
-        },
-        {
-          role: "user",
-          content:
-            "Someone hit me from behind on the highway. I have neck and back pain.",
-        },
-      ],
-    });
-    setLoading(false);
-  }, []);
+    fetch(`${API_BASE}/api/leads/${token}`)
+      .then((r) => {
+        if (r.status === 410) throw new Error("expired");
+        if (!r.ok) throw new Error("not_found");
+        return r.json();
+      })
+      .then((d) => {
+        // Extract contact info from messages
+        const messages: Message[] = d.messages ?? [];
+        const assistantMessages = messages.filter((m) => m.role === "assistant").map((m) => m.content).join(" ");
+
+        // Try to extract lead data from LEAD_DATA tag in assistant messages
+        const leadMatch = assistantMessages.match(/<LEAD_DATA>([\s\S]*?)<\/LEAD_DATA>/);
+        let contactName, contactEmail, contactPhone, caseType, summary;
+        if (leadMatch) {
+          try {
+            const parsed = JSON.parse(leadMatch[1]);
+            contactName = parsed.name;
+            contactEmail = parsed.email !== "null" ? parsed.email : null;
+            contactPhone = parsed.phone !== "null" ? parsed.phone : null;
+            summary = parsed.summary;
+            caseType = parsed.caseType;
+          } catch (_e) {
+            console.error("Error parsing LEAD_DATA:", _e);
+          }
+        }
+
+        setData({
+          ...d,
+          contactName,
+          contactEmail,
+          contactPhone,
+          caseType,
+          summary,
+          messages: messages.filter((m) => !m.content.includes("<LEAD_DATA>")),
+        });
+      })
+      .catch((e) => setError(e.message))
+      .finally(() => setLoading(false));
+  }, [token]);
 
   if (loading) {
     return (
@@ -124,7 +117,9 @@ export default function LeadPortal({ token }: { token: string }) {
     return (
       <div className="screen-center">
         <div className="error-card">
-          <div className="error-icon">{error === "expired" ? "⏱" : "✕"}</div>
+          <div className="error-icon">
+            {error === "expired" ? "⏱" : "✕"}
+          </div>
           <h1>{error === "expired" ? "Link expired" : "Lead not found"}</h1>
           <p>
             {error === "expired"
@@ -144,9 +139,7 @@ export default function LeadPortal({ token }: { token: string }) {
   const score = data.leadScore ?? "cold";
   const scoreConf = SCORE_CONFIG[score];
   const cleanMessages = (data.messages ?? []).filter(
-    (m) =>
-      m.role === "user" ||
-      (m.role === "assistant" && !m.content.includes("__INIT__")),
+    (m) => m.role === "user" || (m.role === "assistant" && !m.content.includes("__INIT__"))
   );
 
   return (
@@ -161,19 +154,10 @@ export default function LeadPortal({ token }: { token: string }) {
             <span className="brand-sub">Lead Summary</span>
           </div>
           <button className="export-btn" onClick={() => exportToCSV(data)}>
-            <svg
-              width="14"
-              height="14"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-              <polyline points="7 10 12 15 17 10" />
-              <line x1="12" y1="15" x2="12" y2="3" />
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="7 10 12 15 17 10"/>
+              <line x1="12" y1="15" x2="12" y2="3"/>
             </svg>
             Export CSV
           </button>
@@ -200,10 +184,7 @@ export default function LeadPortal({ token }: { token: string }) {
               border: `1px solid ${scoreConf.border}`,
             }}
           >
-            <span
-              className="score-dot"
-              style={{ background: scoreConf.color }}
-            />
+            <span className="score-dot" style={{ background: scoreConf.color }} />
             {scoreConf.label}
           </div>
         </div>
@@ -214,53 +195,22 @@ export default function LeadPortal({ token }: { token: string }) {
           <div className="info-grid">
             <InfoRow
               icon={
-                <svg
-                  width="14"
-                  height="14"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                >
-                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                  <circle cx="12" cy="7" r="4" />
-                </svg>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
               }
               label="Name"
               value={data.contactName ?? "—"}
             />
             <InfoRow
               icon={
-                <svg
-                  width="14"
-                  height="14"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                >
-                  <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
-                  <polyline points="22,6 12,13 2,6" />
-                </svg>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
               }
               label="Email"
               value={data.contactEmail ?? "Not provided"}
-              href={
-                data.contactEmail ? `mailto:${data.contactEmail}` : undefined
-              }
+              href={data.contactEmail ? `mailto:${data.contactEmail}` : undefined}
             />
             <InfoRow
               icon={
-                <svg
-                  width="14"
-                  height="14"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                >
-                  <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.77 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l.92-.92a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z" />
-                </svg>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.77 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l.92-.92a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
               }
               label="Phone"
               value={data.contactPhone ?? "Not provided"}
