@@ -1,0 +1,273 @@
+@font-face {
+    font-family: 'VC Honey';
+    src: url('VCHoney-Black.eot');
+    src: local('VC Honey Black'), local('VCHoney-Black'),
+        url('VCHoney-Black.eot?#iefix') format('embedded-opentype'),
+        url('VCHoney-Black.woff2') format('woff2'),
+        url('VCHoney-Black.woff') format('woff'),
+        url('VCHoney-Black.ttf') format('truetype');
+    font-weight: 900;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'VC Honey';
+    src: url('VCHoney-Regular.eot');
+    src: local('VC Honey Regular'), local('VCHoney-Regular'),
+        url('VCHoney-Regular.eot?#iefix') format('embedded-opentype'),
+        url('VCHoney-Regular.woff2') format('woff2'),
+        url('VCHoney-Regular.woff') format('woff'),
+        url('VCHoney-Regular.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'VC Honey SemiBold Deck';
+    src: url('VCHoney-SemiBoldDeck.eot');
+    src: local('VC Honey SemiBold Deck'), local('VCHoney-SemiBoldDeck'),
+        url('VCHoney-SemiBoldDeck.eot?#iefix') format('embedded-opentype'),
+        url('VCHoney-SemiBoldDeck.woff2') format('woff2'),
+        url('VCHoney-SemiBoldDeck.woff') format('woff'),
+        url('VCHoney-SemiBoldDeck.ttf') format('truetype');
+    font-weight: 600;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'VC Honey';
+    src: url('VCHoney-Extrabold.eot');
+    src: local('VC Honey Extrabold'), local('VCHoney-Extrabold'),
+        url('VCHoney-Extrabold.eot?#iefix') format('embedded-opentype'),
+        url('VCHoney-Extrabold.woff2') format('woff2'),
+        url('VCHoney-Extrabold.woff') format('woff'),
+        url('VCHoney-Extrabold.ttf') format('truetype');
+    font-weight: bold;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'VC Honey Deck';
+    src: url('VCHoney-BoldDeck.eot');
+    src: local('VC Honey Bold Deck'), local('VCHoney-BoldDeck'),
+        url('VCHoney-BoldDeck.eot?#iefix') format('embedded-opentype'),
+        url('VCHoney-BoldDeck.woff2') format('woff2'),
+        url('VCHoney-BoldDeck.woff') format('woff'),
+        url('VCHoney-BoldDeck.ttf') format('truetype');
+    font-weight: bold;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'VC Honey SemiBold Banner';
+    src: url('VCHoney-SemiBoldBanner.eot');
+    src: local('VC Honey SemiBold Banner'), local('VCHoney-SemiBoldBanner'),
+        url('VCHoney-SemiBoldBanner.eot?#iefix') format('embedded-opentype'),
+        url('VCHoney-SemiBoldBanner.woff2') format('woff2'),
+        url('VCHoney-SemiBoldBanner.woff') format('woff'),
+        url('VCHoney-SemiBoldBanner.ttf') format('truetype');
+    font-weight: 600;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'VC Honey Banner';
+    src: url('VCHoney-RegularBanner.eot');
+    src: local('VC Honey Regular Banner'), local('VCHoney-RegularBanner'),
+        url('VCHoney-RegularBanner.eot?#iefix') format('embedded-opentype'),
+        url('VCHoney-RegularBanner.woff2') format('woff2'),
+        url('VCHoney-RegularBanner.woff') format('woff'),
+        url('VCHoney-RegularBanner.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'VC Honey Light Banner';
+    src: url('VCHoney-LightBanner.eot');
+    src: local('VC Honey Light Banner'), local('VCHoney-LightBanner'),
+        url('VCHoney-LightBanner.eot?#iefix') format('embedded-opentype'),
+        url('VCHoney-LightBanner.woff2') format('woff2'),
+        url('VCHoney-LightBanner.woff') format('woff'),
+        url('VCHoney-LightBanner.ttf') format('truetype');
+    font-weight: 300;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'VC Honey Black Deck';
+    src: url('VCHoney-BlackDeck.eot');
+    src: local('VC Honey Black Deck'), local('VCHoney-BlackDeck'),
+        url('VCHoney-BlackDeck.eot?#iefix') format('embedded-opentype'),
+        url('VCHoney-BlackDeck.woff2') format('woff2'),
+        url('VCHoney-BlackDeck.woff') format('woff'),
+        url('VCHoney-BlackDeck.ttf') format('truetype');
+    font-weight: 900;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'VC Honey';
+    src: url('VCHoney-Bold.eot');
+    src: local('VC Honey Bold'), local('VCHoney-Bold'),
+        url('VCHoney-Bold.eot?#iefix') format('embedded-opentype'),
+        url('VCHoney-Bold.woff2') format('woff2'),
+        url('VCHoney-Bold.woff') format('woff'),
+        url('VCHoney-Bold.ttf') format('truetype');
+    font-weight: bold;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'VC Honey Deck';
+    src: url('VCHoney-RegularDeck.eot');
+    src: local('VC Honey Regular Deck'), local('VCHoney-RegularDeck'),
+        url('VCHoney-RegularDeck.eot?#iefix') format('embedded-opentype'),
+        url('VCHoney-RegularDeck.woff2') format('woff2'),
+        url('VCHoney-RegularDeck.woff') format('woff'),
+        url('VCHoney-RegularDeck.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'VC Honey Extrabold Banner';
+    src: url('VCHoney-ExtraboldBanner.eot');
+    src: local('VC Honey Extrabold Banner'), local('VCHoney-ExtraboldBanner'),
+        url('VCHoney-ExtraboldBanner.eot?#iefix') format('embedded-opentype'),
+        url('VCHoney-ExtraboldBanner.woff2') format('woff2'),
+        url('VCHoney-ExtraboldBanner.woff') format('woff'),
+        url('VCHoney-ExtraboldBanner.ttf') format('truetype');
+    font-weight: bold;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'VC Honey Black Banner';
+    src: url('VCHoney-BlackBanner.eot');
+    src: local('VC Honey Black Banner'), local('VCHoney-BlackBanner'),
+        url('VCHoney-BlackBanner.eot?#iefix') format('embedded-opentype'),
+        url('VCHoney-BlackBanner.woff2') format('woff2'),
+        url('VCHoney-BlackBanner.woff') format('woff'),
+        url('VCHoney-BlackBanner.ttf') format('truetype');
+    font-weight: 900;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'VC Honey Light Deck';
+    src: url('VCHoney-LightDeck.eot');
+    src: local('VC Honey Light Deck'), local('VCHoney-LightDeck'),
+        url('VCHoney-LightDeck.eot?#iefix') format('embedded-opentype'),
+        url('VCHoney-LightDeck.woff2') format('woff2'),
+        url('VCHoney-LightDeck.woff') format('woff'),
+        url('VCHoney-LightDeck.ttf') format('truetype');
+    font-weight: 300;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'VC Honey';
+    src: url('VCHoney-SemiBold.eot');
+    src: local('VC Honey SemiBold'), local('VCHoney-SemiBold'),
+        url('VCHoney-SemiBold.eot?#iefix') format('embedded-opentype'),
+        url('VCHoney-SemiBold.woff2') format('woff2'),
+        url('VCHoney-SemiBold.woff') format('woff'),
+        url('VCHoney-SemiBold.ttf') format('truetype');
+    font-weight: 600;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'VC Honey Extrabold Deck';
+    src: url('VCHoney-ExtraboldDeck.eot');
+    src: local('VC Honey Extrabold Deck'), local('VCHoney-ExtraboldDeck'),
+        url('VCHoney-ExtraboldDeck.eot?#iefix') format('embedded-opentype'),
+        url('VCHoney-ExtraboldDeck.woff2') format('woff2'),
+        url('VCHoney-ExtraboldDeck.woff') format('woff'),
+        url('VCHoney-ExtraboldDeck.ttf') format('truetype');
+    font-weight: bold;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'VC Honey';
+    src: url('VCHoney-Thin.eot');
+    src: local('VC Honey Thin'), local('VCHoney-Thin'),
+        url('VCHoney-Thin.eot?#iefix') format('embedded-opentype'),
+        url('VCHoney-Thin.woff2') format('woff2'),
+        url('VCHoney-Thin.woff') format('woff'),
+        url('VCHoney-Thin.ttf') format('truetype');
+    font-weight: 100;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'VC Honey Banner';
+    src: url('VCHoney-BoldBanner.eot');
+    src: local('VC Honey Bold Banner'), local('VCHoney-BoldBanner'),
+        url('VCHoney-BoldBanner.eot?#iefix') format('embedded-opentype'),
+        url('VCHoney-BoldBanner.woff2') format('woff2'),
+        url('VCHoney-BoldBanner.woff') format('woff'),
+        url('VCHoney-BoldBanner.ttf') format('truetype');
+    font-weight: bold;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'VC Honey';
+    src: url('VCHoney-Light.eot');
+    src: local('VC Honey Light'), local('VCHoney-Light'),
+        url('VCHoney-Light.eot?#iefix') format('embedded-opentype'),
+        url('VCHoney-Light.woff2') format('woff2'),
+        url('VCHoney-Light.woff') format('woff'),
+        url('VCHoney-Light.ttf') format('truetype');
+    font-weight: 300;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'VC Honey Thin Banner';
+    src: url('VCHoney-ThinBanner.eot');
+    src: local('VC Honey Thin Banner'), local('VCHoney-ThinBanner'),
+        url('VCHoney-ThinBanner.eot?#iefix') format('embedded-opentype'),
+        url('VCHoney-ThinBanner.woff2') format('woff2'),
+        url('VCHoney-ThinBanner.woff') format('woff'),
+        url('VCHoney-ThinBanner.ttf') format('truetype');
+    font-weight: 100;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'VC Honey Thin Deck';
+    src: url('VCHoney-ThinDeck.eot');
+    src: local('VC Honey Thin Deck'), local('VCHoney-ThinDeck'),
+        url('VCHoney-ThinDeck.eot?#iefix') format('embedded-opentype'),
+        url('VCHoney-ThinDeck.woff2') format('woff2'),
+        url('VCHoney-ThinDeck.woff') format('woff'),
+        url('VCHoney-ThinDeck.ttf') format('truetype');
+    font-weight: 100;
+    font-style: normal;
+    font-display: swap;
+}
+
