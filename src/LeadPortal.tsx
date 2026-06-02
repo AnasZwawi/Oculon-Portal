@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import "./portal.css";
 
 const API_BASE =
@@ -20,7 +20,7 @@ type LeadData = {
   phone: string | null;
   caseType: string | null;
   summary: string | null;
-  verdict: string | null;           // plain-English first sentence e.g. "Strong case — recommend same-day contact."
+  verdict: string | null;
   score: "hot" | "warm" | "cold";
   scoreValue: number;
   scoreReason: string | null;
@@ -54,15 +54,35 @@ const URGENCY_LABEL: Record<string, string> = {
   none:     "No urgency",
 };
 
-const STATUS_OPTIONS: { value: LeadStatus; label: string }[] = [
-  { value: "new",       label: "New — not yet contacted" },
-  { value: "contacted", label: "Contacted — awaiting response" },
-  { value: "scheduled", label: "Intake scheduled" },
-  { value: "retained",  label: "Qualified — retained" },
-  { value: "declined",  label: "Declined" },
+const STATUS_OPTIONS: { value: LeadStatus; label: string; short: string }[] = [
+  { value: "new",       label: "New — not yet contacted",    short: "New"       },
+  { value: "contacted", label: "Contacted — awaiting response", short: "Contacted" },
+  { value: "scheduled", label: "Intake scheduled",            short: "Scheduled" },
+  { value: "retained",  label: "Qualified — retained",        short: "Retained"  },
+  { value: "declined",  label: "Declined",                    short: "Declined"  },
 ];
 
+const STATUS_COLORS: Record<LeadStatus, { dot: string; bg: string; border: string; text: string }> = {
+  new:       { dot: "#6b7280", bg: "#f9fafb", border: "#e5e7eb", text: "#374151" },
+  contacted: { dot: "#2563eb", bg: "#eff6ff", border: "#bfdbfe", text: "#1d4ed8" },
+  scheduled: { dot: "#7c3aed", bg: "#f5f3ff", border: "#ddd6fe", text: "#6d28d9" },
+  retained:  { dot: "#16a34a", bg: "#f0fdf4", border: "#bbf7d0", text: "#15803d" },
+  declined:  { dot: "#dc2626", bg: "#fef2f2", border: "#fecaca", text: "#b91c1c" },
+};
+
 // ── Helpers ──────────────────────────────────────────────────────────────────
+function useIsMobile() {
+  const [isMobile, setIsMobile] = useState(
+    () => window.matchMedia("(max-width: 768px)").matches
+  );
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 768px)");
+    const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches);
+    mq.addEventListener("change", handler);
+    return () => mq.removeEventListener("change", handler);
+  }, []);
+  return isMobile;
+}
 
 function exportToCSV(data: LeadData) {
   const transcript = data.messages
@@ -169,6 +189,24 @@ function ClockIcon() {
   );
 }
 
+function ChevronIcon() {
+  return (
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="6 9 12 15 18 9"/>
+    </svg>
+  );
+}
+
+function CheckIcon() {
+  return (
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="20 6 9 17 4 12"/>
+    </svg>
+  );
+}
+
 function InfoRow({
   icon, label, value, href,
 }: {
@@ -190,7 +228,6 @@ function InfoRow({
 }
 
 // ── Status Control ─────────────────────────────────────────────────────────
-// Wire up: replace the TODO comment with your real PATCH call.
 
 type StatusState = "idle" | "saving" | "saved" | "error";
 
@@ -201,32 +238,66 @@ function StatusControl({
   token: string;
   initial: LeadStatus;
 }) {
-  const [status, setStatus]       = useState<LeadStatus>(initial);
-  const [saveState, setSaveState] = useState<StatusState>("idle");
+  const isMobile                    = useIsMobile();
+  const [status, setStatus]         = useState<LeadStatus>(initial);
+  const [saveState, setSaveState]   = useState<StatusState>("idle");
+  const [open, setOpen]             = useState(false);
+  const dropdownRef                 = useRef<HTMLDivElement>(null);
 
-  const handleChange = useCallback(
-    async (e: React.ChangeEvent<HTMLSelectElement>) => {
-      const next = e.target.value as LeadStatus;
-      setStatus(next);
-      setSaveState("saving");
-
-      try {
-        // TODO: replace with your real endpoint when ready
-        // await fetch(`${API_BASE}/api/leads/${token}/status`, {
-        //   method: "PATCH",
-        //   headers: { "Content-Type": "application/json" },
-        //   body: JSON.stringify({ status: next }),
-        // });
-        await new Promise((r) => setTimeout(r, 600)); // placeholder delay
-        setSaveState("saved");
-        setTimeout(() => setSaveState("idle"), 2000);
-      } catch {
-        setSaveState("error");
-        setTimeout(() => setSaveState("idle"), 2500);
+  // Close on outside click
+  useEffect(() => {
+    if (!open) return;
+    function handle(e: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setOpen(false);
       }
-    },
-    [token],
-  );
+    }
+    document.addEventListener("mousedown", handle);
+    return () => document.removeEventListener("mousedown", handle);
+  }, [open]);
+
+  // Close on Escape
+  useEffect(() => {
+    if (!open) return;
+    function handle(e: KeyboardEvent) {
+      if (e.key === "Escape") setOpen(false);
+    }
+    document.addEventListener("keydown", handle);
+    return () => document.removeEventListener("keydown", handle);
+  }, [open]);
+
+  const persist = useCallback(async (next: LeadStatus) => {
+    setSaveState("saving");
+    try {
+      const res = await fetch(`${API_BASE}/api/leads/${token}/status`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: next }),
+      });
+      if (!res.ok) throw new Error("Failed");
+      setSaveState("saved");
+      setTimeout(() => setSaveState("idle"), 2000);
+    } catch {
+      setSaveState("error");
+      setTimeout(() => setSaveState("idle"), 2500);
+    }
+  }, [token]);
+
+  const handleSelect = useCallback((next: LeadStatus) => {
+    setStatus(next);
+    setOpen(false);
+    persist(next);
+  }, [persist]);
+
+  // Native select for mobile
+  const handleNativeChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
+    const next = e.target.value as LeadStatus;
+    setStatus(next);
+    persist(next);
+  }, [persist]);
+
+  const colors = STATUS_COLORS[status];
+  const currentOption = STATUS_OPTIONS.find((o) => o.value === status)!;
 
   return (
     <div className="status-section">
@@ -242,16 +313,94 @@ function StatusControl({
           <span className="status-saving visible" style={{ color: "#dc2626" }}>Error</span>
         )}
       </div>
-      <select
-        className="status-select"
-        value={status}
-        data-status={status}
-        onChange={handleChange}
-      >
-        {STATUS_OPTIONS.map((o) => (
-          <option key={o.value} value={o.value}>{o.label}</option>
-        ))}
-      </select>
+
+      {/* ── Mobile: native select ── */}
+      {isMobile ? (
+        <select
+          className="status-select"
+          value={status}
+          data-status={status}
+          onChange={handleNativeChange}
+        >
+          {STATUS_OPTIONS.map((o) => (
+            <option key={o.value} value={o.value}>{o.label}</option>
+          ))}
+        </select>
+      ) : (
+        /* ── Desktop: custom dropdown ── */
+        <div className="status-dropdown-wrap" ref={dropdownRef}>
+          <button
+            className="status-trigger"
+            onClick={() => setOpen((v) => !v)}
+            aria-haspopup="listbox"
+            aria-expanded={open}
+            style={{
+              backgroundColor: colors.bg,
+              borderColor: open ? colors.dot : colors.border,
+              color: colors.text,
+            }}
+          >
+            <span className="status-trigger-left">
+              <span
+                className="status-dot"
+                style={{ backgroundColor: colors.dot }}
+              />
+              <span className="status-trigger-label">{currentOption.short}</span>
+              <span className="status-trigger-sublabel">{currentOption.label.split("—")[1]?.trim()}</span>
+            </span>
+            <span
+              className="status-chevron"
+              style={{
+                transform: open ? "rotate(180deg)" : "rotate(0deg)",
+                color: colors.dot,
+              }}
+            >
+              <ChevronIcon />
+            </span>
+          </button>
+
+          {open && (
+            <div className="status-menu" role="listbox">
+              {STATUS_OPTIONS.map((o) => {
+                const c = STATUS_COLORS[o.value];
+                const isSelected = o.value === status;
+                return (
+                  <button
+                    key={o.value}
+                    className="status-option"
+                    role="option"
+                    aria-selected={isSelected}
+                    onClick={() => handleSelect(o.value)}
+                    style={{
+                      backgroundColor: isSelected ? c.bg : "transparent",
+                    }}
+                  >
+                    <span className="status-option-left">
+                      <span
+                        className="status-dot"
+                        style={{ backgroundColor: c.dot }}
+                      />
+                      <span className="status-option-text">
+                        <span className="status-option-short" style={{ color: c.text }}>{o.short}</span>
+                        {o.label.includes("—") && (
+                          <span className="status-option-sub">
+                            {o.label.split("—")[1]?.trim()}
+                          </span>
+                        )}
+                      </span>
+                    </span>
+                    {isSelected && (
+                      <span style={{ color: c.dot }}>
+                        <CheckIcon />
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
@@ -312,7 +461,6 @@ export default function LeadPortal({ token }: { token: string }) {
   const urgencyBadge = URGENCY_BADGE[urgencyKey] ?? "badge-low";
   const urgencyLabel = URGENCY_LABEL[urgencyKey] ?? data.urgencyLevel ?? "Unknown";
 
-  // Build a plain-English verdict sentence if the backend doesn't supply one
   const verdictText = data.verdict ?? (
     data.score === "hot"
       ? "Strong lead — recommend same-day contact."
@@ -365,7 +513,27 @@ export default function LeadPortal({ token }: { token: string }) {
             {data.urgencyLevel && data.urgencyLevel !== "none" && (
               <span className={`badge ${urgencyBadge}`}>{urgencyLabel}</span>
             )}
-            <span className="badge badge-new">New</span>
+            {/* Status badge — reflects current status inline */}
+            <span
+              className="badge"
+              style={{
+                backgroundColor: STATUS_COLORS[data.status]?.bg ?? "#f9fafb",
+                color:           STATUS_COLORS[data.status]?.text ?? "#374151",
+                border:          `1px solid ${STATUS_COLORS[data.status]?.border ?? "#e5e7eb"}`,
+              }}
+            >
+              <span
+                style={{
+                  display: "inline-block",
+                  width: 6, height: 6,
+                  borderRadius: "50%",
+                  backgroundColor: STATUS_COLORS[data.status]?.dot ?? "#6b7280",
+                  marginRight: 5,
+                  verticalAlign: "middle",
+                }}
+              />
+              {STATUS_OPTIONS.find((o) => o.value === data.status)?.short ?? "New"}
+            </span>
             <span className="meta-date">{createdAt}</span>
           </div>
         </div>
@@ -441,7 +609,6 @@ export default function LeadPortal({ token }: { token: string }) {
                 </button>
               )}
 
-              {/* Status — wire to backend later */}
               <StatusControl token={token} initial={data.status ?? "new"} />
             </div>
 
