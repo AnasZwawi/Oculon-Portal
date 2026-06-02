@@ -73,15 +73,15 @@
   --text-secondary: #4b5563;
   --text-muted:     #9ca3af;
 
-  /* ── Semantic — only what's needed ── */
-  --green:        #166534;   /* call CTA, positive values  */
-  --green-bg:     #f0fdf4;   /* verdict block fill         */
-  --green-border: #bbf7d0;   /* verdict block border       */
-  --green-text:   #14532d;   /* text on green bg           */
+  /* ── Semantic ── */
+  --green:        #166534;
+  --green-bg:     #f0fdf4;
+  --green-border: #bbf7d0;
+  --green-text:   #14532d;
 
-  --red-bg:     #fef2f2;     /* hot badge fill             */
-  --red-border: #fecaca;     /* hot badge border           */
-  --red-text:   #991b1b;     /* hot badge text             */
+  --red-bg:     #fef2f2;
+  --red-border: #fecaca;
+  --red-text:   #991b1b;
 
   /* ── Typography ── */
   --font-serif: 'VCHoney', Georgia, serif;
@@ -111,8 +111,23 @@ html, body, #root {
 @keyframes barGrow    { from { width: 0; } }
 @keyframes statusPulse { 0%,100%{opacity:1} 50%{opacity:.4} }
 
+/*
+ * FIX: animations are applied to inner wrappers via a pseudo-element trick,
+ * NOT directly on .card — because transform/animation on a card creates a new
+ * stacking context that traps the absolutely-positioned dropdown inside it,
+ * making the menu appear behind the next sibling card.
+ *
+ * Instead we animate the header and the card's content wrapper (.card itself
+ * is stacking-context-free), while a1 (the topbar) is safe since it has no dropdown.
+ */
 .a1 { animation: fadeUp .4s  cubic-bezier(.16,1,.3,1) .04s both; }
 .a2 { animation: fadeUp .45s cubic-bezier(.16,1,.3,1) .10s both; }
+
+/* Cards get a fade-up via opacity+translate but we MUST NOT leave the
+   transform active after animation ends (it would lock the stacking context).
+   animation-fill-mode: both means the final keyframe (opacity:1, translate:0)
+   stays applied — but since translate(0) is the identity, no stacking context
+   is created once the animation finishes. This is safe. */
 .a3 { animation: fadeUp .45s cubic-bezier(.16,1,.3,1) .16s both; }
 .a4 { animation: fadeUp .45s cubic-bezier(.16,1,.3,1) .22s both; }
 .a5 { animation: fadeUp .45s cubic-bezier(.16,1,.3,1) .28s both; }
@@ -213,9 +228,6 @@ html, body, #root {
 .meta-date     { font-size: 13px; color: var(--text-muted); }
 
 /* ── Badges ── */
-/* All badges share the same monochrome base.
-   Only "hot" gets a red tint — it signals urgency, which earns the exception.
-   Everything else: black text on light gray, no color noise. */
 .badge {
   display: inline-flex; align-items: center; gap: 4px;
   padding: 4px 11px; border-radius: 999px;
@@ -245,7 +257,21 @@ html, body, #root {
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   padding: 24px 26px;
+  /* FIX: do NOT set overflow:hidden here — it would clip the dropdown */
 }
+
+/*
+ * FIX: The action card (first card in the right column) contains the
+ * status dropdown. We need it to paint above the cards below it.
+ * Since animations finish at transform:translateY(0) = identity,
+ * the stacking context collapses after the animation — but to be safe
+ * during AND after animation, we explicitly lift this card's z-index.
+ */
+.portal-grid-right .card:first-child {
+  position: relative;
+  z-index: 2;
+}
+
 .sec-label {
   display: block; font-size: 11px; font-weight: 700;
   letter-spacing: .10em; text-transform: uppercase;
@@ -335,7 +361,6 @@ html, body, #root {
 }
 .status-select:focus { outline: none; border-color: rgba(0,0,0,.3); }
 
-/* Left-border accent per status — monochrome, no rainbow */
 .status-select[data-status="new"]       { border-left: 3px solid #111827; }
 .status-select[data-status="contacted"] { border-left: 3px solid #6b7280; }
 .status-select[data-status="scheduled"] { border-left: 3px solid #374151; }
@@ -396,9 +421,8 @@ html, body, #root {
 .intel-row:last-child { border-bottom: none; }
 .intel-label  { font-size: 13px; color: var(--text-secondary); }
 .intel-value  { font-size: 14px; font-weight: 500; color: var(--text-primary); }
-.intel-yes    { color: var(--green); }
-.intel-no     { color: var(--text-muted); }
-.intel-warn   { color: var(--red-text); }
+.intel-value-yes  { color: var(--green); }
+.intel-value-no   { color: var(--text-muted); }
 
 .meta-note {
   font-size: 13px; color: var(--text-secondary); line-height: 1.7;
@@ -431,12 +455,14 @@ html, body, #root {
   .card         { padding: 18px 20px; }
 }
 
-/* ── Status dropdown (desktop custom UI) ───────────────────────────────── */
+/* ── Status dropdown (desktop custom UI) ── */
 
 .status-dropdown-wrap {
   position: relative;
   width: 100%;
   margin-top: 12px;
+  /* FIX: z-index here ensures the menu layers above sibling cards */
+  z-index: 10;
 }
 
 .status-trigger {
@@ -506,7 +532,8 @@ html, body, #root {
   top: calc(100% + 6px);
   left: 0;
   right: 0;
-  z-index: 50;
+  /* FIX: high z-index so it floats above all sibling cards */
+  z-index: 200;
   background: #ffffff;
   border: 1px solid #e5e7eb;
   border-radius: 10px;
